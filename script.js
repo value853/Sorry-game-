@@ -3,7 +3,7 @@ class PuzzleGame {
         this.imageUrl = imageUrl;
         this.message = message;
         this.pieces = [];
-        this.currentLevel = 12; // 默认难度
+        this.currentLevel = 12;
         this.loadImage().then(() => {
             this.init();
             this.setupControls();
@@ -16,13 +16,11 @@ class PuzzleGame {
             img.onload = () => {
                 this.imageWidth = img.width;
                 this.imageHeight = img.height;
-                // 计算合适的显示尺寸，保持比例
                 const containerWidth = 400;
                 const ratio = this.imageWidth / this.imageHeight;
                 this.displayWidth = containerWidth;
                 this.displayHeight = containerWidth / ratio;
                 
-                // 更新容器尺寸
                 const container = document.getElementById('puzzle-container');
                 container.style.width = `${this.displayWidth}px`;
                 container.style.height = `${this.displayHeight}px`;
@@ -35,7 +33,6 @@ class PuzzleGame {
     }
 
     setupControls() {
-        // 难度选择
         const difficultyBtns = document.querySelectorAll('.difficulty-btn');
         difficultyBtns.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -46,7 +43,6 @@ class PuzzleGame {
             });
         });
 
-        // 重新开始按钮
         document.getElementById('restart-btn').addEventListener('click', () => {
             this.resetGame();
         });
@@ -68,9 +64,9 @@ class PuzzleGame {
                 break;
             case 16:
                 container.style.gridTemplateColumns = 'repeat(4, 1fr)';
-                container.style.height = '400px'; // 保持正方形
+                container.style.height = '400px';
                 break;
-            default: // 12块
+            default:
                 container.style.gridTemplateColumns = 'repeat(4, 1fr)';
                 container.style.height = '300px';
         }
@@ -79,15 +75,10 @@ class PuzzleGame {
     init() {
         const container = document.getElementById('puzzle-container');
         const pieces = this.createPieces();
-        
-        // 打乱拼图顺序
         this.pieces = this.shuffleArray(pieces);
-        
-        // 渲染拼图
         this.pieces.forEach((piece, index) => {
             container.appendChild(this.createPieceElement(piece, index));
         });
-
         this.addEventListeners();
     }
 
@@ -107,15 +98,12 @@ class PuzzleGame {
         element.className = 'puzzle-piece';
         element.dataset.id = piece.id;
         
-        // 根据难度计算背景位置
         let cols = this.currentLevel === 9 ? 3 : 4;
         let rows = this.currentLevel === 16 ? 4 : 3;
         
-        // 计算每个片段的大小
         const pieceWidth = this.displayWidth / cols;
         const pieceHeight = this.displayHeight / rows;
         
-        // 计算背景位置
         const x = (piece.id % cols) * pieceWidth;
         const y = Math.floor(piece.id / cols) * pieceHeight;
         
@@ -145,7 +133,6 @@ class PuzzleGame {
                     selectedPiece = piece;
                     piece.style.border = '2px solid #07c160';
                 } else {
-                    // 交换两个片段
                     const tempBackground = selectedPiece.style.backgroundPosition;
                     const tempId = selectedPiece.dataset.id;
                     
@@ -158,30 +145,26 @@ class PuzzleGame {
                     selectedPiece.style.border = '1px solid #ccc';
                     selectedPiece = null;
 
-                    // 检查是否完成
                     this.checkCompletion();
                 }
             });
         });
 
-        // 添加分享按钮事件
         document.getElementById('share-btn').addEventListener('click', () => {
-            // 使用原生分享API（这样在手机浏览器中也能分享）
             if (navigator.share) {
                 navigator.share({
-                    title: '来和我一起玩拼图游戏吧！',
-                    text: '这是一个有趣的甲秀楼拼图游戏',
+                    title: '星星同学的拼图',
+                    text: '来看看我想对你说的话',
                     url: window.location.href
                 });
             } else {
-                // 复制链接到剪贴板
                 const dummy = document.createElement('input');
                 document.body.appendChild(dummy);
                 dummy.value = window.location.href;
                 dummy.select();
                 document.execCommand('copy');
                 document.body.removeChild(dummy);
-                alert('链接已复制，请粘贴给好友！');
+                alert('链接已复制，请粘贴给Ta！');
             }
         });
     }
@@ -205,8 +188,110 @@ class PuzzleGame {
     }
 }
 
-// 使用示例
-const game = new PuzzleGame(
-    'image2.jpeg',  // 直接使用文件名
-    '对不起，我知道我做错了。你的感受我都明白，我应该更细心、更体贴。原谅我好吗？我会努力改正，好好珍惜你。'
-); 
+// 登录和游戏初始化逻辑
+document.addEventListener('DOMContentLoaded', () => {
+    const loginBtn = document.getElementById('login-btn');
+    const loginContainer = document.getElementById('login-container');
+    const gameContainer = document.getElementById('game-container');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const customImage = document.getElementById('custom-image');
+    const customMessage = document.getElementById('custom-message');
+    let imageDataUrl = null;
+
+    // 添加图片预览功能
+    customImage.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imageDataUrl = e.target.result;
+                document.getElementById('upload-btn').textContent = '已选择图片';
+                document.getElementById('upload-btn').style.background = '#4CAF50';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    function handleLogin() {
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value.trim();
+        const message = customMessage.value.trim();
+        
+        if (username === 'xingxing' && password === 'stars') {
+            if (!imageDataUrl) {
+                alert('请选择一张图片');
+                return;
+            }
+            if (!message) {
+                alert('请输入想说的话');
+                return;
+            }
+
+            console.log('登录成功');
+            const loginTime = new Date().toLocaleString('zh-CN', {timeZone: 'Asia/Shanghai'});
+            recordLogin(loginTime);
+            
+            loginContainer.style.display = 'none';
+            
+            setTimeout(() => {
+                gameContainer.style.display = 'block';
+                gameContainer.classList.remove('hidden');
+                
+                new PuzzleGame(
+                    imageDataUrl,  // 使用用户上传的图片
+                    message  // 使用用户输入的文字
+                );
+            }, 100);
+        } else {
+            console.log('登录失败');
+            alert('用户名或密码错误');
+        }
+    }
+
+    // 添加登录记录函数
+    async function recordLogin(loginTime) {
+        try {
+            const response = await fetch('https://api.github.com/repos/value853/-sorry-game-/issues', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'token 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',
+                    'Accept': 'application/vnd.github.v3+json'
+                },
+                body: JSON.stringify({
+                    title: `登录记录 - ${loginTime}`,
+                    body: `用户登录时间：${loginTime}\n\n登录IP：${await getIP()}`
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`GitHub API responded with status ${response.status}`);
+            }
+        } catch (error) {
+            console.error('记录登录信息时出错:', error);
+        }
+    }
+
+    // 获取用户IP
+    async function getIP() {
+        try {
+            const response = await fetch('https://api.ipify.org?format=json');
+            const data = await response.json();
+            return data.ip;
+        } catch (error) {
+            return '未知IP';
+        }
+    }
+
+    loginBtn.addEventListener('click', handleLogin);
+
+    passwordInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            handleLogin();
+        }
+    });
+
+    gameContainer.style.display = 'none';
+    gameContainer.classList.add('hidden');
+    loginContainer.style.display = 'flex';
+});
